@@ -33,7 +33,6 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
-
     // ==========================================
     // CORS
     // Frontend is now deployed separately from the
@@ -49,26 +48,23 @@ public class SecurityConfig {
         // Add every origin the frontend is served from
         // (local dev servers, deployed frontend URL, etc.)
         configuration.setAllowedOrigins(List.of(
-            "http://localhost:5500",
-            "http://127.0.0.1:5500",
-            "http://localhost:3000",
-            "http://localhost:8081"
-        ));
+                "http://localhost:5500",
+                "http://127.0.0.1:5500",
+                "http://localhost:3000",
+                "http://localhost:8081",
+                "https://bejewelled-creponne-e58a21.netlify.app"));
 
         configuration.setAllowedMethods(List.of(
-            "GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"
-        ));
+                "GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
 
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
 
-        UrlBasedCorsConfigurationSource source =
-            new UrlBasedCorsConfigurationSource();
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
 
         return source;
     }
-
 
     // ==========================================
     // SECURITY FILTER CHAIN
@@ -82,74 +78,65 @@ public class SecurityConfig {
 
         http
 
-            // Enable CORS using the bean above
-            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                // Enable CORS using the bean above
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
 
-            // Disable CSRF
-            .csrf(csrf -> csrf.disable())
+                // Disable CSRF
+                .csrf(csrf -> csrf.disable())
 
-            // JWT = Stateless
-            .sessionManagement(session ->
-                session.sessionCreationPolicy(
-                    SessionCreationPolicy.STATELESS
-                )
-            )
+                // JWT = Stateless
+                .sessionManagement(session -> session.sessionCreationPolicy(
+                        SessionCreationPolicy.STATELESS))
 
-            // ======================================
-            // AUTHORIZATION
-            // ======================================
+                // ======================================
+                // AUTHORIZATION
+                // ======================================
 
-            .authorizeHttpRequests(auth -> auth
+                .authorizeHttpRequests(auth -> auth
 
-                // ----------------------------------
-                // FRONTEND FILES
-                // ----------------------------------
+                        // ----------------------------------
+                        // FRONTEND FILES
+                        // ----------------------------------
 
-                .requestMatchers(
-                    "/html/**",
-                    "/css/**",
-                    "/js/**",
-                    "/favicon.ico"
-                ).permitAll()
+                        .requestMatchers(
+                                "/html/**",
+                                "/css/**",
+                                "/js/**",
+                                "/favicon.ico")
+                        .permitAll()
 
+                        // ----------------------------------
+                        // LOGIN + REGISTER
+                        // ----------------------------------
 
-                // ----------------------------------
-                // LOGIN + REGISTER
-                // ----------------------------------
+                        .requestMatchers(
+                                "/api/users/login",
+                                "/api/users/register",
+                                "/api/users/reset-password")
+                        .permitAll()
 
-                .requestMatchers(
-                    "/api/users/login",
-                    "/api/users/register",
-                    "/api/users/reset-password"
-                ).permitAll()
+                        // ----------------------------------
+                        // USER MANAGEMENT
+                        // ADMIN ONLY
+                        // ----------------------------------
 
+                        .requestMatchers(
+                                "/api/users/**")
+                        .hasRole("ADMIN")
 
-                // ----------------------------------
-                // USER MANAGEMENT
-                // ADMIN ONLY
-                // ----------------------------------
+                        // ----------------------------------
+                        // OTHER API
+                        // ----------------------------------
 
-                .requestMatchers(
-                    "/api/users/**"
-                ).hasRole("ADMIN")
+                        .anyRequest().authenticated())
 
+                // ======================================
+                // JWT FILTER
+                // ======================================
 
-                // ----------------------------------
-                // OTHER API
-                // ----------------------------------
-
-                .anyRequest().authenticated()
-            )
-
-
-            // ======================================
-            // JWT FILTER
-            // ======================================
-
-            .addFilterBefore(
-                jwtAuthenticationFilter,
-                UsernamePasswordAuthenticationFilter.class
-            );
+                .addFilterBefore(
+                        jwtAuthenticationFilter,
+                        UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

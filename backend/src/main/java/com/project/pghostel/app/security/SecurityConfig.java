@@ -52,7 +52,7 @@ public class SecurityConfig {
                 "http://127.0.0.1:5500",
                 "http://localhost:3000",
                 "http://localhost:8081",
-                "https://bejewelled-creponne-e58a21.netlify.app"));
+                "https://pgmanagementapp.netlify.app"));
 
         configuration.setAllowedMethods(List.of(
                 "GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
